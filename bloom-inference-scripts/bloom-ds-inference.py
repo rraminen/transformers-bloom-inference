@@ -71,16 +71,16 @@ def get_repo_root(model_name_or_path):
     if is_offline_mode():
         print_rank0("Offline mode: forcing local_files_only=True")
 
-    # download only on first process
-    if rank == 0:
-        snapshot_download(
-            model_name_or_path,
-            local_files_only=is_offline_mode(),
-            cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
-            ignore_patterns=["*.safetensors"],
-        )
+    ## download only on first process
+    #if rank == 0:
+    #    snapshot_download(
+    #        model_name_or_path,
+    #        local_files_only=is_offline_mode(),
+    #        cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
+    #        ignore_patterns=["*.safetensors"],
+    #    )
 
-    dist.barrier()
+    #dist.barrier()
 
     return snapshot_download(
         model_name_or_path,
@@ -168,7 +168,12 @@ if kernel_inject:
 else:
     kwargs = dict(injection_policy={BloomBlock: ("self_attention.dense", "mlp.dense_4h_to_h")})
 
+# comment the below line if the data set is already downloaded
 repo_root = get_repo_root(model_name)
+
+# uncomment the below line if the data set is already downloaded
+#repo_root = "/root/.cache/huggingface/hub/models--bigscience--bloom"
+
 if tp_presharded_mode:
     # tp presharded repos come with their own checkpoints config file
     checkpoints_json = os.path.join(repo_root, "ds_inference_config.json")
